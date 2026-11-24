@@ -3,7 +3,15 @@ import fs from 'node:fs';
 import crypto from 'node:crypto';
 import path from 'node:path';
 
-export const uploadDirectory = path.resolve(process.env.UPLOAD_DIR || 'uploads');
+const defaultUploadDirectory = process.env.VERCEL === '1'
+  ? path.join('/tmp', 'campus-lost-found-uploads')
+  : 'uploads';
+const configuredUploadDirectory = process.env.UPLOAD_DIR || defaultUploadDirectory;
+const effectiveUploadDirectory = process.env.VERCEL === '1' && !path.isAbsolute(configuredUploadDirectory)
+  ? path.join('/tmp', configuredUploadDirectory)
+  : configuredUploadDirectory;
+
+export const uploadDirectory = path.resolve(effectiveUploadDirectory);
 fs.mkdirSync(uploadDirectory, { recursive: true });
 
 const storage = multer.diskStorage({
