@@ -67,6 +67,12 @@ Deploy the API first, then set its origin as `VITE_API_URL` in the client projec
 
 Existing database records that point to local `/uploads/...` files are not migrated automatically; move those images to Cloudinary and update their `imageUrl` values before using that data on Vercel. If existing records use CLIP embeddings, recompute them with the Sharp-based descriptor too so new and existing items can match.
 
+## Deploy the frontend on Vercel and API on Render
+
+The production frontend uses `VITE_API_URL` from `client/.env.production`, currently set to `https://foundry-pyg6.onrender.com`. If the API URL changes, update that value and redeploy the frontend. Alternatively, set `VITE_API_URL` in the Vercel project's environment variables; Vite includes it at build time.
+
+The API allows `https://foundry-pi-six.vercel.app` and local development by default. Set `CLIENT_ORIGIN` in the Render API service's environment variables to any additional exact frontend origins (no trailing slash), comma-separated. Keep database and Cloudinary credentials configured only in Render.
+
 ## Administration and deployment notes
 
 New accounts are regular users. Assign the `admin` role through a trusted database operation to create an administrator; there is no public admin-registration flow. Administrators can manage report statuses at `/admin/reports` and review contact submissions at `/admin/contact`.
