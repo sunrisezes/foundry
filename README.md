@@ -39,7 +39,9 @@ The server reads these variables from `server/.env`:
 | `JWT_SECRET` | — | Required signing secret, at least 32 characters. |
 | `CLIENT_ORIGIN` | `http://localhost:5173` | Allowed client origin(s); separate multiple origins with commas. |
 | `UPLOAD_DIR` | `uploads` locally; `/tmp/campus-lost-found-uploads` on Vercel | Temporary upload directory. |
-| `BLOB_READ_WRITE_TOKEN` | — | Required on Vercel for durable image uploads; configure only on the API project. |
+| `IMAGE_STORAGE_PROVIDER` | `auto` | Set to `cloudinary` to require Cloudinary and prevent local fallback; `auto` uses Cloudinary when configured. |
+| `CLOUDINARY_URL` | — | Cloudinary connection URL; alternatively set `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET`. Keep these credentials on the API only. |
+| `BLOB_READ_WRITE_TOKEN` | — | Optional legacy storage fallback; Cloudinary is preferred when configured. |
 | `VISION_OFFLINE` | `0` locally | Set to `1` to skip downloading the CLIP model and use the Sharp-based descriptor. Vercel always uses the Sharp-based descriptor. |
 
 When `VISION_OFFLINE` is not enabled, the server attempts to load the CLIP model. If the model weights cannot be downloaded, it logs the reason and uses the Sharp-based descriptor instead. No paid external API is used.
@@ -59,11 +61,11 @@ This repository contains two Vercel projects. Import the GitHub repository twice
 1. **Client:** `client` (Vercel should detect Vite). Add `VITE_API_URL` with the deployed API project's origin, for example `https://your-api.vercel.app`, without a trailing slash. The `client/vercel.json` rewrite supports client-side routes such as `/admin/reports`.
 2. **API:** `server` (Vercel should detect Express). Add `MONGODB_URI`, a random `JWT_SECRET` of at least 32 characters, and `CLIENT_ORIGIN` set to the client project's production origin. Ensure the MongoDB provider allows connections from the deployed API.
 
-For durable image storage, create a **public** Vercel Blob store and connect it to the API project with `BLOB_READ_WRITE_TOKEN`. Keep this token server-side; do not add it to the client project. The API uses Vercel Blob for uploaded images and temporary storage only while processing an upload. Vercel uses the Sharp-based visual descriptor instead of downloading the CLIP model.
+For durable image storage, create a Cloudinary account, set `IMAGE_STORAGE_PROVIDER=cloudinary`, and set `CLOUDINARY_URL` (or its cloud name, API key, and API secret components) in the API project's environment variables. Keep these credentials server-side; do not add them to the client project. Cloudinary is used for uploaded images while temporary files are used only during processing. Existing Vercel Blob images remain supported when `BLOB_READ_WRITE_TOKEN` is configured. Vercel uses the Sharp-based visual descriptor instead of downloading the CLIP model.
 
 Deploy the API first, then set its origin as `VITE_API_URL` in the client project and deploy the client. Verify the API at `https://your-api.vercel.app/api/health`. Add any Vercel preview or custom client origins to `CLIENT_ORIGIN` as comma-separated values if those deployments need API access.
 
-Existing database records that point to local `/uploads/...` files are not migrated automatically; move those images to Blob and update their `imageUrl` values before using that data on Vercel. If existing records use CLIP embeddings, recompute them with the Sharp-based descriptor too so new and existing items can match.
+Existing database records that point to local `/uploads/...` files are not migrated automatically; move those images to Cloudinary and update their `imageUrl` values before using that data on Vercel. If existing records use CLIP embeddings, recompute them with the Sharp-based descriptor too so new and existing items can match.
 
 ## Administration and deployment notes
 

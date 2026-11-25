@@ -17,6 +17,7 @@ const itemSchema = new mongoose.Schema({
   description: { type: String, required: true, trim: true, maxlength: 2000 },
   category: { type: String, enum: ITEM_CATEGORIES, required: true, index: true },
   imageUrl: { type: String, required: true },
+  imagePublicId: { type: String, default: null, select: false },
   embedding: { type: [Number], required: true, select: false },
   locationTag: { type: String, enum: CAMPUS_ZONES, required: true, index: true },
   specificSpot: { type: String, trim: true, maxlength: 160, default: '' },

@@ -73,18 +73,23 @@ router.post('/', protect, imageUpload.single('image'), async (req, res, next) =>
     }
     const item = await Item.create({
       type, title, description, category, locationTag, specificSpot, itemDate,
-      verificationQuestion, embedding, imageUrl: storedImage.url, postedBy: req.user._id
+      verificationQuestion, embedding, imageUrl: storedImage.url,
+      imagePublicId: storedImage.publicId || null, postedBy: req.user._id
     });
     storedImage = null;
     uploadedPath = null;
     const matches = await findAndSaveMatches(item);
     await item.populate('postedBy', 'name department');
-    return res.status(201).json({ item: item.toObject({ transform: (_doc, value) => { delete value.embedding; return value; } }), matches });
+    return res.status(201).json({ item: item.toObject({ transform: (_doc, value) => {
+      delete value.embedding;
+      delete value.imagePublicId;
+      return value;
+    } }), matches });
   } catch (error) {
     if (uploadedPath) await fs.unlink(uploadedPath).catch(() => {});
     if (storedImage?.remote) {
       try {
-        await deleteStoredImage(storedImage.url);
+        await deleteStoredImage(storedImage.url, storedImage.publicId);
       } catch (cleanupError) {
         console.error(`Failed to remove an unclaimed uploaded image: ${cleanupError.message}`);
       }
@@ -97,7 +102,7 @@ router.patch('/:id', protect, imageUpload.single('image'), async (req, res, next
   let uploadedPath = req.file?.path;
   let storedImage;
   try {
-    const item = await Item.findById(req.params.id).select('+embedding');
+    const item = await Item.findById(req.params.id).select('+embedding +imagePublicId');
     if (!item) {
       if (uploadedPath) await fs.unlink(uploadedPath).catch(() => {});
       return res.status(404).json({ message: 'Item not found.' });
@@ -142,6 +147,7 @@ router.patch('/:id', protect, imageUpload.single('image'), async (req, res, next
     }
 
     const previousImageUrl = item.imageUrl;
+    const previousImagePublicId = item.imagePublicId;
     for (const field of editableFields) {
       if (Object.hasOwn(req.body, field)) item[field] = req.body[field];
     }
@@ -160,6 +166,7 @@ router.patch('/:id', protect, imageUpload.single('image'), async (req, res, next
         uploadedPath = null;
       }
       item.imageUrl = storedImage.url;
+      item.imagePublicId = storedImage.publicId || null;
     }
     await item.save();
     storedImage = null;
@@ -167,16 +174,20 @@ router.patch('/:id', protect, imageUpload.single('image'), async (req, res, next
     await Match.deleteMany({ $or: [{ lostItem: item._id }, { foundItem: item._id }] });
     const matches = await findAndSaveMatches(item);
     if (previousImageUrl !== item.imageUrl) {
-      await deleteStoredImage(previousImageUrl);
+      await deleteStoredImage(previousImageUrl, previousImagePublicId);
     }
     await item.populate('postedBy', 'name department');
-    const itemData = item.toObject({ transform: (_doc, value) => { delete value.embedding; return value; } });
+    const itemData = item.toObject({ transform: (_doc, value) => {
+      delete value.embedding;
+      delete value.imagePublicId;
+      return value;
+    } });
     return res.json({ item: itemData, matches });
   } catch (error) {
     if (uploadedPath) await fs.unlink(uploadedPath).catch(() => {});
     if (storedImage?.remote) {
       try {
-        await deleteStoredImage(storedImage.url);
+        await deleteStoredImage(storedImage.url, storedImage.publicId);
       } catch (cleanupError) {
         console.error(`Failed to remove an unclaimed replacement image: ${cleanupError.message}`);
       }
