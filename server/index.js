@@ -2,6 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 import helmet from 'helmet';
+import { existsSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import rateLimit from 'express-rate-limit';
@@ -17,6 +18,7 @@ import contactRoutes from './routes/contact.js';
 
 const app = express();
 const currentDirectory = path.dirname(fileURLToPath(import.meta.url));
+const clientBuildDirectory = path.resolve(currentDirectory, '../client/dist');
 const port = Number(process.env.PORT) || 5000;
 const configuredOrigins = process.env.CLIENT_ORIGIN?.split(',').map((origin) => origin.trim()).filter(Boolean) || [];
 const allowedOrigins = [...new Set([
@@ -40,11 +42,15 @@ app.use('/api/claims', claimRoutes);
 app.use('/api/contact', contactRoutes);
 app.get('/api/health', (_req, res) => res.json({ status: 'ok' }));
 
-if (process.env.NODE_ENV === 'production' && process.env.VERCEL !== '1') {
-  app.use(express.static(path.resolve(currentDirectory, '../client/dist')));
+if (
+  process.env.NODE_ENV === 'production'
+  && process.env.VERCEL !== '1'
+  && existsSync(path.join(clientBuildDirectory, 'index.html'))
+) {
+  app.use(express.static(clientBuildDirectory));
   app.get('*', (req, res, next) => {
     if (req.path.startsWith('/api/')) return next();
-    return res.sendFile(path.resolve(currentDirectory, '../client/dist/index.html'));
+    return res.sendFile(path.join(clientBuildDirectory, 'index.html'));
   });
 }
 

@@ -75,6 +75,8 @@ The API allows `https://foundry-pi-six.vercel.app` and local development by defa
 
 The Express API trusts one proxy hop so Render's forwarded client IP header works with API rate limiting.
 
+The API serves a bundled frontend only when `client/dist/index.html` exists; a separate Render API deployment does not need a frontend build.
+
 ## Administration and deployment notes
 
 New accounts are regular users. Assign the `admin` role through a trusted database operation to create an administrator; there is no public admin-registration flow. Administrators can manage report statuses at `/admin/reports` and review contact submissions at `/admin/contact`.
