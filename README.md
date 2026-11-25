@@ -42,9 +42,9 @@ The server reads these variables from `server/.env`:
 | `IMAGE_STORAGE_PROVIDER` | `auto` | Set to `cloudinary` to require Cloudinary and prevent local fallback; `auto` uses Cloudinary when configured. |
 | `CLOUDINARY_URL` | — | Cloudinary connection URL; alternatively set `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, and `CLOUDINARY_API_SECRET`. Keep these credentials on the API only. |
 | `BLOB_READ_WRITE_TOKEN` | — | Optional legacy storage fallback; Cloudinary is preferred when configured. |
-| `VISION_OFFLINE` | `0` locally | Set to `1` to skip downloading the CLIP model and use the Sharp-based descriptor. Vercel always uses the Sharp-based descriptor. |
+| `VISION_OFFLINE` | `0` locally | Set to `1` to skip downloading the CLIP model and use the Sharp-based descriptor. Vercel and Render use the Sharp-based descriptor automatically. |
 
-When `VISION_OFFLINE` is not enabled, the server attempts to load the CLIP model. If the model weights cannot be downloaded, it logs the reason and uses the Sharp-based descriptor instead. No paid external API is used.
+When `VISION_OFFLINE` is not enabled, the server attempts to load the CLIP model locally. If the model weights cannot be downloaded, it logs the reason and uses the Sharp-based descriptor instead. Render and Vercel use the Sharp-based descriptor to avoid loading the larger model in constrained deployments. No paid external API is used.
 
 ## Build, test, and production
 

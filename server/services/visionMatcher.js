@@ -29,7 +29,7 @@ function unitNormalize(vector) {
 async function loadExtractor() {
   if (!extractorPromise) {
     extractorPromise = (async () => {
-      if (process.env.VISION_OFFLINE === '1' || process.env.VERCEL === '1') {
+      if (process.env.VISION_OFFLINE === '1' || process.env.VERCEL === '1' || process.env.RENDER === 'true') {
         usingFallback = true;
         console.warn('Using the local Sharp visual descriptor.');
         return null;

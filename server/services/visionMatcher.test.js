@@ -5,10 +5,11 @@ import path from 'node:path';
 import sharp from 'sharp';
 import test from 'node:test';
 
-process.env.VISION_OFFLINE = '1';
+process.env.RENDER = 'true';
+delete process.env.VISION_OFFLINE;
 const { extractEmbedding, cosineSimilarity } = await import('./visionMatcher.js');
 
-test('offline image descriptor is deterministic, normalized, and includes RGB/HSV/spatial/edge features', async () => {
+test('uses the lightweight Render descriptor, which is deterministic and normalized', async () => {
   const directory = await mkdtemp(path.join(os.tmpdir(), 'campus-vision-'));
   try {
     const imagePath = path.join(directory, 'item.png');
