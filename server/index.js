@@ -26,6 +26,7 @@ const allowedOrigins = [...new Set([
 ])];
 
 app.disable('x-powered-by');
+app.set('trust proxy', 1);
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'cross-origin' } }));
 app.use(cors({ origin: allowedOrigins }));
 app.use(express.json({ limit: '1mb' }));
