@@ -71,7 +71,7 @@ Existing database records that point to local `/uploads/...` files are not migra
 
 The production frontend uses `VITE_API_URL` from `client/.env.production`, currently set to `https://foundry-pyg6.onrender.com`. If the API URL changes, update that value and redeploy the frontend. Alternatively, set `VITE_API_URL` in the Vercel project's environment variables; Vite includes it at build time.
 
-The API allows `https://foundry-pi-six.vercel.app` and local development by default. Set `CLIENT_ORIGIN` in the Render API service's environment variables to any additional exact frontend origins (no trailing slash), comma-separated. Keep database and Cloudinary credentials configured only in Render.
+The API allows `https://foundry-pi-six.vercel.app`, `https://foundry-sunrisezes.vercel.app`, and local development by default. Set `CLIENT_ORIGIN` in the Render API service's environment variables to any additional exact frontend origins (no trailing slash), comma-separated. Keep database and Cloudinary credentials configured only in Render.
 
 The Express API trusts one proxy hop so Render's forwarded client IP header works with API rate limiting.
 

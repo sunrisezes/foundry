@@ -24,6 +24,7 @@ const configuredOrigins = process.env.CLIENT_ORIGIN?.split(',').map((origin) => 
 const allowedOrigins = [...new Set([
   'http://localhost:5173',
   'https://foundry-pi-six.vercel.app',
+  'https://foundry-sunrisezes.vercel.app',
   ...configuredOrigins
 ])];
 
